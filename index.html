@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Expense Tracker Pro font-sans v5.2.1</title>
+    <!-- Tailwind CSS for Professional Premium UI -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Premium Circular Pie Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .dark-theme { background-color: #121212; color: #ffffff; }
+        .dark-theme .bg-white { background-color: #1e1e1e; color: #ffffff; }
+        .dark-theme .text-slate-800 { color: #f3f4f6; }
+        .dark-theme .text-slate-700 { color: #e5e7eb; }
+        .dark-theme .bg-slate-50 { background-color: #2a2a2a; color: #ffffff; }
+        .dark-theme .bg-slate-100 { background-color: #121212; }
+        .dark-theme input, .dark-theme select { background-color: #333333; color: white; border-color: #4b5563; }
+        .premium-btn { transition: all 0.2s ease-in-out; }
+        .premium-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .premium-btn:active { transform: translateY(0); }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen pb-24 transition-all duration-300" id="appBody">
+
+    <!-- APP CONTAINER -->
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-2xl relative flex flex-col justify-between border-x border-slate-200">
+        
+        <!-- TOP STICKY PREMIUM HEADER -->
+        <header class="bg-gradient-to-r from-indigo-700 to-purple-800 text-white p-4 sticky top-0 z-50 shadow-md flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-wallet text-xl text-yellow-400"></i>
+                <h1 id="pageTitle" class="text-xl font-bold tracking-wide">Home</h1>
+            </div>
+            <span class="text-xs bg-white/20 backdrop-blur-md px-2 py-1 rounded-full font-mono font-bold">v5.2.1</span>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="p-4 flex-grow mb-16">
+            
+            <!-- TAB 1: HOME -->
+            <section id="tab-home" class="tab-content space-y-5">
+                
+                <!-- HOME FILTER & SEARCH ENGINE -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="homeTimeFilter" class="p-2.5 border border-slate-300 rounded-lg text-xs w-full bg-white font-medium shadow-sm" onchange="toggleCustomDateInput(); updateUI();">
+                            <option value="All">📅 সম্পূর্ণ ডাটা (All)</option>
+                            <option value="Today">আজকের (Today)</option>
+                            <option value="Week">এই সপ্তাহের (This Week)</option>
+                            <option value="Month">এই মাসের (This Month)</option>
+                            <option value="Year">এই বছরের (This Year)</option>
+                            <option value="Custom">নির্দিষ্ট তারিখ (Custom Date)</option>
+                        </select>
+                        <div class="relative w-full">
+                            <input type="text" id="homeSearchBar" placeholder="Search entries..." class="p-2.5 pl-7 border border-slate-300 rounded-lg text-xs w-full bg-white shadow-sm" oninput="updateUI()">
+                            <i class="fa fa-search absolute left-2.5 top-3.5 text-slate-400 text-[10px]"></i>
+                        </div>
+                    </div>
+                    <div id="customDateWrapper" class="hidden">
+                        <input type="date" id="homeCustomDate" class="p-2.5 border border-slate-300 rounded-lg text-xs w-full bg-white font-medium shadow-sm" onchange="updateUI()">
+                    </div>
+                </div>
+
+                <!-- Financial Analytics Grid -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-3 rounded-xl border border-emerald-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-emerald-800 font-bold">Total Income</span>
+                            <i class="fa-solid fa-circle-arrow-down text-emerald-600 text-xs"></i>
+                        </div>
+                        <p id="totalIncome" class="text-lg font-black text-emerald-700">৳0</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-rose-50 to-rose-100/50 p-3 rounded-xl border border-rose-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-rose-800 font-bold">Total Expense</span>
+                            <i class="fa-solid fa-circle-arrow-up text-rose-600 text-xs"></i>
+                        </div>
+                        <p id="totalExpense" class="text-lg font-black text-rose-700">৳0</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 p-3 rounded-xl border border-blue-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-blue-800 font-bold">Available Balance</span>
+                            <i class="fa-solid fa-scale-balanced text-blue-600 text-xs"></i>
+                        </div>
+                        <p id="totalBalance" class="text-lg font-black text-blue-700">৳0</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-amber-50 to-amber-100/50 p-3 rounded-xl border border-amber-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-amber-800 font-bold">Savings Vault 💰</span>
+                            <i class="fa-solid fa-money-bill-trend-up text-amber-600 text-xs"></i>
+                        </div>
+                        <p id="totalSavingsHome" class="text-lg font-black text-amber-700">৳0</p>
+                    </div>
+                </div>
+
+                <!-- DYNAMIC WALLETS MONITOR DISPLAY -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-wallet text-cyan-600"></i> My Wallets (ওয়ালেটসমূহ)
+                    </h3>
+                    <div id="homeWalletsContainer" class="grid grid-cols-2 gap-2">
+                        <!-- Custom Wallets load dynamically -->
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100 shadow-sm">
+                    <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-indigo-600"></i> Recent Filtered Transactions</h3>
+                    <div id="recentTransactions" class="space-y-2">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: TRANSACTION & GRAPH GRIDS -->
+            <section id="tab-transaction" class="tab-content hidden space-y-5">
+                <!-- Circular Pie Chart -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                    <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-chart-pie text-indigo-600"></i> Income vs Expense</h3>
+                    <div class="w-full max-w-[180px] mx-auto pt-2">
+                        <canvas id="incomeExpensePieChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Category Matrix Horizontal Budget Bars -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-chart-bar text-purple-600"></i> Category Budget Ledger</h3>
+                    <div id="categoryProgressContainer" class="space-y-4">
+                        <!-- Dynamic Progress Bars -->
+                    </div>
+                </div>
+
+                <!-- Filter & Search Bar -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="filterType" class="p-2.5 border border-slate-300 rounded-lg text-xs w-full bg-white font-medium" onchange="renderTransactions()">
+                            <option value="All">🔍 সব Filter</option>
+                            <option value="Income">Income</option>
+                            <option value="Expense">Expense</option>
+                            <option value="Transfer">Transfer</option>
+                            <option value="Debt/Loan">Debt/Loan</option>
+                        </select>
+                        <div class="relative w-full">
+                            <input type="text" id="searchBar" placeholder="Search..." class="p-2.5 pl-7 border border-slate-300 rounded-lg text-xs w-full bg-white" oninput="renderTransactions()">
+                            <i class="fa fa-search absolute left-2.5 top-3.5 text-slate-400 text-[10px]"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Master List -->
+                <div id="masterTransactionList" class="space-y-2">
+                    <!-- Dynamic Rows -->
+                </div>
+            </section>
+
+            <!-- TAB 3: + ADD BUTTON -->
+            <section id="tab-add" class="tab-content hidden space-y-4">
+                <h3 class="font-bold text-sm text-center text-slate-500 tracking-wider uppercase">নতুন ডাটা এন্ট্রি সিলেক্ট করুন</h3>
+                
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button onclick="showForm('form-income')" class="premium-btn bg-emerald-600 text-white p-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-arrow-down-long"></i> Income 💚</button>
+                    <button onclick="showForm('form-expense')" class="premium-btn bg-rose-600 text-white p-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-arrow-up-long"></i> Expense ❤️</button>
+                    <button onclick="showForm('form-transfer')" class="premium-btn bg-indigo-600 text-white p-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-right-left"></i> Transfer 🔄</button>
+                    <button onclick="showForm('form-cat')" class="premium-btn bg-slate-700 text-white p-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-folder-plus"></i> Category Add 📁</button>
+                    <button onclick="showForm('form-wallet')" class="premium-btn bg-cyan-600 text-white p-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-wallet"></i> Wallet Add 👛</button>
+                    <button onclick="showForm('form-debt')" class="premium-btn bg-orange-600 text-white p-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm"><i class="fa-solid fa-landmark"></i> Debt / Loan 🏦</button>
+                </div>
+
+                <!-- FORMS CONTAINER -->
+                <div id="form-container" class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner hidden">
+                    
+                    <!-- 1. Income Form -->
+                    <form id="form-income" class="form-element hidden" onsubmit="saveData(event, 'Income')">
+                        <h4 id="incFormHeader" class="font-bold text-emerald-700 border-b border-emerald-200 pb-1.5 mb-3"><i class="fa-solid fa-circle-down"></i> Add Income</h4>
+                        <div class="space-y-2 text-xs">
+                            <label class="block font-medium">Source/Wallet: <select id="inc-wallet-select" required class="w-full mt-1 p-2 border rounded-lg bg-white"></select></label>
+                            <label class="block font-medium">Amount/Taka: <input type="number" id="inc-amount" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">Date: <input type="date" id="inc-date" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">Note Optional: <input type="text" id="inc-note" class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <button type="submit" id="incSubmitBtn" class="w-full premium-btn bg-emerald-600 text-white p-2.5 rounded-lg font-bold mt-3 shadow-md"><i class="fa fa-plus"></i> Add Income</button>
+                        </div>
+                    </form>
+
+                    <!-- 2. Expense Form -->
+                    <form id="form-expense" class="form-element hidden" onsubmit="saveData(event, 'Expense')">
+                        <h4 id="expFormHeader" class="font-bold text-rose-700 border-b border-rose-200 pb-1.5 mb-3"><i class="fa-solid fa-circle-up"></i> Add Expense</h4>
+                        <div class="space-y-2 text-xs">
+                            <label class="block font-medium">Category: <select id="exp-cat" required class="w-full mt-1 p-2 border rounded-lg bg-white"></select></label>
+                            <label class="block font-medium">Amount/Taka: <input type="number" id="exp-amount" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">Date: <input type="date" id="exp-date" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">From Wallet: <select id="exp-wallet" required class="w-full mt-1 p-2 border rounded-lg bg-white"></select></label>
+                            <label class="block font-medium">Note Optional: <input type="text" id="inc-note-exp" class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <button type="submit" id="expSubmitBtn" class="w-full premium-btn bg-rose-600 text-white p-2.5 rounded-lg font-bold mt-3 shadow-md"><i class="fa fa-plus"></i> Add Expense</button>
+                        </div>
+                    </form>
+
+                    <!-- 3. Transfer Form -->
+                    <form id="form-transfer" class="form-element hidden" onsubmit="saveData(event, 'Transfer')">
+                        <h4 id="transFormHeader" class="font-bold text-indigo-700 border-b border-indigo-200 pb-1.5 mb-3"><i class="fa-solid fa-right-left"></i> Add Transfer</h4>
+                        <div class="space-y-2 text-xs">
+                            <label class="block font-medium">From Wallet: <select id="trans-from" required class="w-full mt-1 p-2 border rounded-lg bg-white"></select></label>
+                            <label class="block font-medium">To Wallet: <select id="trans-to" required class="w-full mt-1 p-2 border rounded-lg bg-white"></select></label>
+                            <label class="block font-medium">Amount: <input type="number" id="trans-amount" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">Date: <input type="date" id="trans-date" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">Note Optional: <input type="text" id="trans-note" class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <button type="submit" id="transSubmitBtn" class="w-full premium-btn bg-indigo-600 text-white p-2.5 rounded-lg font-bold mt-3 shadow-md"><i class="fa fa-plus"></i> Transfer</button>
+                        </div>
+                    </form>
+
+                    <!-- 4. Category Add Form -->
+                    <form id="form-cat" class="form-element hidden" onsubmit="saveCategory(event)">
+                        <h4 class="font-bold text-slate-700 border-b border-slate-200 pb-1.5 mb-3" id="catFormHeader"><i class="fa-solid fa-folder-plus"></i> Add/Edit Category</h4>
+                        <div class="space-y-2 text-xs">
+                            <label class="block font-medium">Category Name: <input type="text" id="cat-name" placeholder="যেমন: Food, Rent, Savings" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">Color: <input type="color" id="cat-color" value="#4f46e5" class="w-full h-9 mt-1 cursor-pointer"></label>
+                            <label class="block font-medium">Budget Target Percentage (%): <input type="number" id="cat-budget" min="0" max="100" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <button type="submit" id="catSubmitBtn" class="w-full premium-btn bg-slate-700 text-white p-2.5 rounded-lg font-bold mt-3 shadow-md"><i class="fa fa-plus"></i> Save Category</button>
+                        </div>
+                    </form>
+
+                    <!-- 5. Wallet Form -->
+                    <form id="form-wallet" class="form-element hidden" onsubmit="saveWallet(event)">
+                        <h4 class="font-bold text-cyan-700 border-b border-cyan-200 pb-1.5 mb-3" id="walletFormHeader"><i class="fa-solid fa-wallet"></i> Add/Edit Wallet</h4>
+                        <div class="space-y-2 text-xs">
+                            <label class="block font-medium">Wallet Name: <input type="text" id="wall-name" placeholder="যেমন: Cash, bKash, Bank" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">Initial/Opening Balance: <input type="number" id="wall-balance" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <button type="submit" id="walletSubmitBtn" class="w-full premium-btn bg-cyan-600 text-white p-2.5 rounded-lg font-bold mt-3 shadow-md"><i class="fa fa-plus"></i> Save Wallet</button>
+                        </div>
+                    </form>
+
+                    <!-- 6. Debt / Loan Form -->
+                    <form id="form-debt" class="form-element hidden" onsubmit="saveData(event, 'Debt/Loan')">
+                        <h4 id="debtFormHeader" class="font-bold text-orange-700 border-b border-orange-200 pb-1.5 mb-3"><i class="fa-solid fa-landmark"></i> Add Debt / Loan</h4>
+                        <div class="space-y-2 text-xs">
+                            <label class="block font-medium">Type: 
+                                <select id="debt-type" required class="w-full mt-1 p-2 border rounded-lg bg-white">
+                                    <option value="দেনা">দেনা (আমি পাবো)</option>
+                                    <option value="পাওনা">পাওনা (অন্যে পাবে)</option>
+                                </select>
+                            </label>
+                            <label class="block font-medium">Name: <input type="text" id="debt-name" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">Name: <input type="text" id="debt-name" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">Amount: <input type="number" id="debt-amount" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">Date: <input type="date" id="debt-date" required class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <label class="block font-medium">Note Optional: <input type="text" id="debt-note" class="w-full mt-1 p-2 border rounded-lg bg-white"></label>
+                            <button type="submit" id="debtSubmitBtn" class="w-full premium-btn bg-orange-600 text-white p-2.5 rounded-lg font-bold mt-3 shadow-md"><i class="fa fa-plus"></i> Add Debt</button>
+                        </div>
+                    </form>
+
+                </div>
+            </section>
+
+            <!-- TAB 4: SAVINGS -->
+            <section id="tab-savings" class="tab-content hidden space-y-5">
+                <!-- Percentage Configurator -->
+                <div class="bg-gradient-to-br from-indigo-50 to-indigo-100/50 p-4 rounded-xl border border-indigo-200 shadow-sm">
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-indigo-800 mb-2.5"><i class="fa-solid fa-sliders"></i> সেভিংস লক্ষ্যমাত্রা (%) নির্ধারণ করুন</h4>
+                    <div class="flex items-center gap-3">
+                        <input type="number" id="savingsPercentInput" placeholder="যেমন: 20" min="0" max="100" class="p-2 border rounded-lg text-xs bg-white font-bold text-indigo-900 w-24 focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                        <span class="text-xs font-bold text-slate-700">% অফ মোট ইনকাম</span>
+                        <button onclick="updateSavingsPercentTarget()" class="premium-btn bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3 py-2 rounded-lg shadow-sm ml-auto">Set Goal</button>
+                    </div>
+                </div>
+
+                <!-- Horizontal Progress Indicator Grid -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wide"><i class="fa-solid fa-bullseye text-indigo-600"></i> Savings Target Status</span>
+                        <span id="savingsTargetPercentLabel" class="text-xs font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">Goal: 0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden border border-slate-200 shadow-inner relative flex items-center">
+                        <div id="savingsProgressBar" style="width: 0%;" class="bg-gradient-to-r from-amber-400 to-amber-600 h-full rounded-full transition-all duration-700 ease-out"></div>
+                        <span id="progressBarInsideLabel" class="absolute inset-0 flex justify-center items-center text-[10px] font-black text-slate-700 mix-blend-multiply">0% Achieved</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-1 text-center">
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase">Target Taka</p>
+                            <p id="savingsTargetTaka" class="text-sm font-black text-slate-700">৳0</p>
+                        </div>
+                        <div class="bg-amber-50 p-2 rounded-lg border border-amber-100">
+                            <p class="text-[10px] text-amber-700 font-bold uppercase">Achieved (জমা হয়েছে)</p>
+                            <p id="savingsAchievedTaka" class="text-sm font-black text-amber-600">৳0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Savings History List Breakdown -->
+                <div class="space-y-2">
+                    <h4 class="font-bold text-xs uppercase text-slate-500 tracking-wider"><i class="fa-solid fa-history"></i> Savings Sync Ledger</h4>
+                    <div id="savingsMasterList" class="space-y-2">
+                        <!-- Dynamic Content Rows -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: USER & SYSTEM INFO CREDIT CENTER -->
+            <section id="tab-user" class="tab-content hidden space-y-4">
+                <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-4 rounded-xl text-center shadow-md">
+                    <div class="w-14 h-14 bg-blue-500 rounded-full mx-auto flex items-center justify-center text-lg font-bold border-2 border-white mb-2 shadow">AR</div>
+                    <h2 class="text-base font-bold tracking-wide text-white">Username: Abdur Rajjak</h2>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 class="font-bold text-sm text-slate-700 border-b border-slate-200 pb-1.5"><i class="fa-solid fa-sliders"></i> Control Center</h4>
+                    
+                    <div class="flex justify-between items-center text-xs font-medium text-slate-600">
+                        <span class="text-slate-700">Theme Appearance</span>
+                        <button onclick="toggleTheme()" class="premium-btn bg-slate-800 text-white px-3 py-1.5 rounded-lg font-bold text-[11px]"><i class="fa-solid fa-moon"></i> Light/Dark Toggle</button>
+                    </div>
+
+                    <!-- Categories Configuration Manager -->
+                    <div class="border-t border-slate-200 pt-3">
+                        <h5 class="font-bold text-xs text-slate-700 mb-2"><i class="fa-solid fa-folder-tree"></i> Categories List Manager:</h5>
+                        <div id="categoryManagerList" class="space-y-1 text-xs"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-2">
+                        <button onclick="downloadCSV()" class="premium-btn bg-blue-600 text-white p-2.5 rounded-lg text-xs font-bold shadow-sm"><i class="fa-solid fa-file-csv"></i> Download CSV</button>
+                        <button onclick="deleteAllData()" class="premium-btn bg-rose-600 text-white p-2.5 rounded-lg text-xs font-bold shadow-sm"><i class="fa-solid fa-trash-can"></i> Delete All Data</button>
+                    </div>
+                </div>
+
+                <!-- APP INFO / ABOUT CREDIT SYSTEM SECTION -->
+                <div class="bg-gradient-to-br from-slate-50 to-slate-100 p-4 rounded-xl border border-slate-200 text-xs space-y-2 shadow-sm text-slate-700">
+                    <h4 class="font-bold border-b border-slate-300 pb-1.5 flex items-center gap-1.5 text-slate-800">
+                        <i class="fa-solid fa-circle-info text-indigo-600"></i> App Info / About Us
+                    </h4>
+                    <div class="space-y-1 font-medium">
+                        <p class="flex justify-between">
+                            <span class="text-slate-500">Developer:</span> 
+                            <span class="font-bold text-indigo-700 tracking-wide">ABDUR RAJJAK</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-slate-500">Publisher:</span> 
+                            <span class="font-bold text-purple-700 tracking-wide">ABID HASAN</span>
+                        </p>
+                        <p class="flex justify-between border-t border-slate-200/60 pt-1 mt-1">
+                            <span class="text-slate-500">Version Type:</span> 
+                            <span class="font-mono bg-slate-200 px-1.5 py-0.5 rounded text-[10px] font-bold text-slate-800">Premium Pro v5.2.1</span>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- FOOTER WATERMARK -->
+        <footer class="absolute bottom-16 left-0 right-0 text-center py-2 text-[10px] text-slate-400 border-t bg-slate-50/80 font-mono tracking-wider">
+            © 2026 | Abdur Rajjak
+        </footer>
+
+        <!-- 5-TAB NAVIGATION BOTTOM BAR -->
+        <nav class="bg-white/95 backdrop-blur border-t border-slate-200 fixed bottom-0 max-w-md w-full grid grid-cols-5 text-center py-2 shadow-lg z-50">
+            <button onclick="switchTab('Home', 'tab-home')" class="nav-btn text-blue-600 font-bold text-[10px] tracking-tight"><i class="fa-solid fa-house text-xl block mb-1"></i>Home</button>
+            <button onclick="switchTab('Transaction', 'tab-transaction')" class="nav-btn text-slate-400 text-[10px] tracking-tight"><i class="fa-solid fa-chart-line text-xl block mb-1"></i>Transaction</button>
+            <button onclick="switchTab('Add', 'tab-add')" class="nav-btn text-slate-400 text-[10px] tracking-tight"><i class="fa-solid fa-circle-plus text-2xl block mb-0.5"></i>Add</button>
+            <button onclick="switchTab('Savings', 'tab-savings')" class="nav-btn text-slate-400 text-[10px] tracking-tight flex flex-col items-center justify-center"><span class="text-xl block mb-0.5">💰</span>Savings</button>
+            <button onclick="switchTab('User', 'tab-user')" class="nav-btn text-slate-400 text-[10px] tracking-tight"><i class="fa-solid fa-user-gear text-xl block mb-1"></i>User</button>
+        </nav>
+
+    </div>
+
+    <!-- MAIN APP CORE DATABASE ENGINE CODE -->
+    <script>
+        let myPieChart = null;
+        let currentEditCategoryId = null; 
+        let currentEditWalletId = null;   
+        let currentEditTransactionId = null; 
+
+        let appData = JSON.parse(localStorage.getItem('pet_data_v5_0')) || {
+            transactions: [],
+            categories: [], 
+            wallets: []
+        };
+
+        function getSmartIcon(name) {
+            let lower = name.toLowerCase();
+            if (lower.includes('food')) return '🍔';
+            if (lower.includes('rent')) return '🏠';
+            if (lower.includes('bank')) return '🏦';
+            if (lower.includes('bkash') || lower.includes('cash')) return '📱';
+            if (lower.includes('savings') || lower.includes('সেভিংস')) return '💰';
+            return '📁';
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('pet_data_v5_0', JSON.stringify(appData));
+            updateUI();
+        }
+
+        function toggleCustomDateInput() {
+            let filter = document.getElementById('homeTimeFilter').value;
+            let wrapper = document.getElementById('customDateWrapper');
+            wrapper.classList.toggle('hidden', filter !== 'Custom');
+        }
+
+        function switchTab(title, tabId) {
+            document.getElementById('pageTitle').innerText = title;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-blue-600', 'font-bold');
+                btn.classList.add('text-slate-400');
+                if(btn.innerText.trim().includes(title)) {
+                    btn.classList.remove('text-slate-400');
+                    btn.classList.add('text-blue-600', 'font-bold');
+                }
+            });
+
+            if(title === 'Transaction') renderChartsAndBars();
+        }
+
+        function showForm(formId) {
+            document.getElementById('form-container').classList.remove('hidden');
+            document.querySelectorAll('.form-element').forEach(el => el.classList.add('hidden'));
+            document.getElementById(formId).classList.remove('hidden');
+            populateDropdowns();
+        }
+
+        function populateDropdowns() {
+            let incWall = document.getElementById('inc-wallet-select');
+            let expCat = document.getElementById('exp-cat');
+            let expWall = document.getElementById('exp-wallet');
+            let transFrom = document.getElementById('trans-from');
+            let transTo = document.getElementById('trans-to');
+
+            let walletOptions = appData.wallets.map(w => `<option value="${w.name}">${w.name}</option>`).join('') || '<option value="">Wallet তৈরি করুন</option>';
+            if(incWall) incWall.innerHTML = walletOptions;
+            if(expWall) expWall.innerHTML = walletOptions;
+            if(transFrom) transFrom.innerHTML = walletOptions;
+            if(transTo) transTo.innerHTML = walletOptions;
+
+            if(expCat) {
+                expCat.innerHTML = appData.categories.length > 0 
+                    ? appData.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('')
+                    : '<option value="">Category তৈরি করুন</option>';
+            }
+        }
+
+        function updateSavingsPercentTarget() {
+            let pValue = parseFloat(document.getElementById('savingsPercentInput').value) || 0;
+            let savingsCat = appData.categories.find(c => c.name.toLowerCase() === 'savings');
+            if(savingsCat) {
+                savingsCat.budget = pValue;
+            } else {
+                appData.categories.push({ id: Date.now(), name: 'Savings', color: '#f59e0b', budget: pValue, icon: '💰' });
+            }
+            saveToStorage();
+            alert(`সেভিংস টার্গেট ${pValue}% সেট ও ক্যাটাগরিতে সিঙ্ক হয়েছে!`);
+        }
+
+        function saveCategory(e) {
+            e.preventDefault();
+            let name = document.getElementById('cat-name').value.trim();
+            let color = document.getElementById('cat-color').value;
+            let budget = parseFloat(document.getElementById('cat-budget').value) || 0;
+            
+            if(currentEditCategoryId) {
+                let existing = appData.categories.find(c => c.id === currentEditCategoryId);
+                if(existing) {
+                    let oldName = existing.name;
+                    appData.transactions.forEach(t => {
+                        if(t.category === oldName) t.category = name;
+                    });
+                    existing.name = name;
+                    existing.color = color;
+                    existing.budget = budget;
+                    existing.icon = getSmartIcon(name);
+                    alert('ক্যাটাগরি সফলভাবে আপডেট করা হয়েছে!');
+                }
+                currentEditCategoryId = null;
+                document.getElementById('catFormHeader').innerHTML = `<i class="fa-solid fa-folder-plus"></i> Add/Edit Category`;
+                document.getElementById('catSubmitBtn').innerHTML = `<i class="fa fa-plus"></i> Save Category`;
+            } else {
+                let dupCheck = appData.categories.find(c => c.name.toLowerCase() === name.toLowerCase());
+                if(dupCheck) { alert('এই নামের ক্যাটাগরি ইতিমধ্যে বিদ্যমান!'); return; }
+                appData.categories.push({ id: Date.now(), name, color, budget, icon: getSmartIcon(name) });
+                alert('নতুন ক্যাটাগরি সফলভাবে যোগ হয়েছে!');
+            }
+            e.target.reset();
+            document.getElementById('form-container').classList.add('hidden');
+            saveToStorage();
+        }
+
+        function deleteCategory(id) {
+            let cat = appData.categories.find(c => c.id === id);
+            if(cat && confirm(`এই ক্যাটাগরি মুছে ফেললে এর সাথে যুক্ত সমস্ত ট্রানজেকশনও মুছে যাবে! আপনি কি নিশ্চিত?`)) {
+                appData.transactions = appData.transactions.filter(t => t.category !== cat.name);
+                appData.categories = appData.categories.filter(c => c.id !== id);
+                saveToStorage();
+            }
+        }
+
+        function editCategory(id) {
+            let cat = appData.categories.find(c => c.id === id);
+            if(!cat) return;
+            currentEditCategoryId = id;
+            switchTab('Add', 'tab-add');
+            showForm('form-cat');
+            document.getElementById('catFormHeader').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Category Mode`;
+            document.getElementById('catSubmitBtn').innerHTML = `<i class="fa fa-save"></i> Update Category`;
+            document.getElementById('cat-name').value = cat.name;
+            document.getElementById('cat-color').value = cat.color;
+            document.getElementById('cat-budget').value = cat.budget;
+        }
+
+        function saveWallet(e) {
+            e.preventDefault();
+            let name = document.getElementById('wall-name').value.trim();
+            let balance = parseFloat(document.getElementById('wall-balance').value) || 0;
+            
+            if(currentEditWalletId) {
+                let existing = appData.wallets.find(w => w.id === currentEditWalletId);
+                if(existing) {
+                    let oldName = existing.name;
+                    appData.transactions.forEach(t => {
+                        if(t.source === oldName) t.source = name;
+                        if(t.wallet === oldName) t.wallet = name;
+                        if(t.fromWallet === oldName) t.fromWallet = name;
+                        if(t.toWallet === oldName) t.toWallet = name;
+                    });
+                    existing.name = name;
+                    existing.balance = balance;
+                    existing.icon = getSmartIcon(name);
+                    alert('ওয়ালেট সফলভাবে আপডেট হয়েছে!');
+                }
+                currentEditWalletId = null;
+                document.getElementById('walletFormHeader').innerHTML = `<i class="fa-solid fa-wallet"></i> Add/Edit Wallet`;
+                document.getElementById('walletSubmitBtn').innerHTML = `<i class="fa fa-plus"></i> Save Wallet`;
+            } else {
+                let dupCheck = appData.wallets.find(w => w.name.toLowerCase() === name.toLowerCase());
+                if(dupCheck) { alert('এই নামের ওয়ালেট ইতিমধ্যে বিদ্যমান!'); return; }
+                appData.wallets.push({ id: Date.now(), name, balance, icon: getSmartIcon(name) });
+                alert('নতুন ওয়ালেট সফলভাবে যোগ হয়েছে!');
+            }
+            e.target.reset();
+            document.getElementById('form-container').classList.add('hidden');
+            saveToStorage();
+        }
+
+        function deleteWallet(id) {
+            let wallet = appData.wallets.find(w => w.id === id);
+            if(wallet && confirm(`এই ওয়ালেটটি ডিলিট করলে এর সাথে জড়িত সমস্ত লেনদেনের হিস্ট্রিও ডিলিট হয়ে যাবে! ডিলিট করতে চান?`)) {
+                appData.transactions = appData.transactions.filter(t => 
+                    t.source !== wallet.name && 
+                    t.wallet !== wallet.name && 
+                    t.fromWallet !== wallet.name && 
+                    t.toWallet !== wallet.name
+                );
+                appData.wallets = appData.wallets.filter(w => w.id !== id);
+                saveToStorage();
+            }
+        }
+
+        function editWallet(id) {
+            let wall = appData.wallets.find(w => w.id === id);
+            if(!wall) return;
+            currentEditWalletId = id;
+            switchTab('Add', 'tab-add');
+            showForm('form-wallet');
+            document.getElementById('walletFormHeader').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Wallet Mode`;
+            document.getElementById('walletSubmitBtn').innerHTML = `<i class="fa fa-save"></i> Update Wallet`;
+            document.getElementById('wall-name').value = wall.name;
+            document.getElementById('wall-balance').value = wall.balance;
+        }
+
+        function saveData(e, type) {
+            e.preventDefault();
+            let isEditMode = (currentEditTransactionId !== null);
+            let transaction = isEditMode 
+                ? appData.transactions.find(t => t.id === currentEditTransactionId) 
+                : { id: Date.now() };
+                
+            transaction.type = type;
+
+            if(type === 'Income') {
+                transaction.source = document.getElementById('inc-wallet-select').value;
+                if(!transaction.source) { alert('প্রথমে ওয়ালেট তৈরি করুন!'); return; }
+                transaction.amount = parseFloat(document.getElementById('inc-amount').value);
+                transaction.date = document.getElementById('inc-date').value;
+                transaction.note = document.getElementById('inc-note').value;
+                // clean other properties
+                delete transaction.category; delete transaction.wallet; delete transaction.fromWallet; delete transaction.toWallet; delete transaction.debtType; delete transaction.name;
+            } else if(type === 'Expense') {
+                let catVal = document.getElementById('exp-cat').value;
+                if(!catVal) { alert('ক্যাটাগরি সিলেক্ট করুন!'); return; }
+                transaction.category = catVal;
+                transaction.amount = parseFloat(document.getElementById('exp-amount').value);
+                transaction.date = document.getElementById('exp-date').value;
+                transaction.wallet = document.getElementById('exp-wallet').value;
+                if(!transaction.wallet) { alert('ওয়ালেট সিলেক্ট করুন!'); return; }
+                transaction.note = document.getElementById('inc-note-exp').value;
+                delete transaction.source; delete transaction.fromWallet; delete transaction.toWallet; delete transaction.debtType; delete transaction.name;
+            } else if(type === 'Transfer') {
+                transaction.fromWallet = document.getElementById('trans-from').value;
+                transaction.toWallet = document.getElementById('trans-to').value;
+                if(!transaction.fromWallet || !transaction.toWallet) { alert('ওয়ালেট সিলেক্ট করুন!'); return; }
+                if(transaction.fromWallet === transaction.toWallet) { alert('একই ওয়ালেটে ট্রান্সফার সম্ভব নয়!'); return; }
+                transaction.amount = parseFloat(document.getElementById('trans-amount').value);
+                transaction.date = document.getElementById('trans-date').value;
+                transaction.note = document.getElementById('trans-note').value;
+                delete transaction.source; delete transaction.category; delete transaction.wallet; delete transaction.debtType; delete transaction.name;
+            } else if(type === 'Debt/Loan') {
+                transaction.debtType = document.getElementById('debt-type').value;
+                transaction.name = document.getElementById('debt-name').value;
+                transaction.amount = parseFloat(document.getElementById('debt-amount').value);
+                transaction.date = document.getElementById('debt-date').value;
+                transaction.note = document.getElementById('debt-note').value;
+                delete transaction.source; delete transaction.category; delete transaction.wallet; delete transaction.fromWallet; delete transaction.toWallet;
+            }
+
+            if(!isEditMode) {
+                appData.transactions.push(transaction);
+                alert(`${type} এন্ট্রি সফলভাবে সম্পন্ন হয়েছে!`);
+            } else {
+                alert(`এন্ট্রি সফলভাবে আপডেট হয়েছে!`);
+                currentEditTransactionId = null;
+                resetTransactionFormHeaders();
+            }
+
+            e.target.reset();
+            document.getElementById('form-container').classList.add('hidden'); 
+            saveToStorage();
+        }
+
+        function resetTransactionFormHeaders() {
+            document.getElementById('incFormHeader').innerHTML = `<i class="fa-solid fa-circle-down"></i> Add Income`;
+            document.getElementById('incSubmitBtn').innerHTML = `<i class="fa fa-plus"></i> Add Income`;
+            document.getElementById('expFormHeader').innerHTML = `<i class="fa-solid fa-circle-up"></i> Add Expense`;
+            document.getElementById('expSubmitBtn').innerHTML = `<i class="fa fa-plus"></i> Add Expense`;
+            document.getElementById('transFormHeader').innerHTML = `<i class="fa-solid fa-right-left"></i> Add Transfer`;
+            document.getElementById('transSubmitBtn').innerHTML = `<i class="fa fa-plus"></i> Transfer`;
+            document.getElementById('debtFormHeader').innerHTML = `<i class="fa-solid fa-landmark"></i> Add Debt / Loan`;
+            document.getElementById('debtSubmitBtn').innerHTML = `<i class="fa fa-plus"></i> Add Debt`;
+        }
+
+        function filterByTime(tDate, mode) {
+            let target = new Date(tDate);
+            let today = new Date();
+            target.setHours(0,0,0,0); today.setHours(0,0,0,0);
+
+            if(mode === 'Today') return target.getTime() === today.getTime();
+            if(mode === 'Week') {
+                let first = new Date(today.setDate(today.getDate() - today.getDay()));
+                return target >= first;
+            }
+            if(mode === 'Month') return target.getMonth() === new Date().getMonth() && target.getFullYear() === new Date().getFullYear();
+            if(mode === 'Year') return target.getFullYear() === new Date().getFullYear();
+            if(mode === 'Custom') {
+                let cVal = document.getElementById('homeCustomDate').value;
+                if(!cVal) return true;
+                let cDate = new Date(cVal); cDate.setHours(0,0,0,0);
+                return target.getTime() === cDate.getTime();
+            }
+            return true;
+        }
+
+        function updateUI() {
+            let timeMode = document.getElementById('homeTimeFilter').value;
+            let searchQuery = document.getElementById('homeSearchBar').value.toLowerCase();
+
+            let walletBalances = {};
+            let initialWalletsSum = 0;
+            
+            appData.wallets.forEach(w => {
+                walletBalances[w.name] = w.balance;
+                initialWalletsSum += w.balance;
+            });
+
+            let globalTotalIncome = initialWalletsSum; 
+            let totalExp = 0; 
+            let totalSav = 0;
+
+            appData.transactions.forEach(t => {
+                if(t.type === 'Income') {
+                    globalTotalIncome += t.amount;
+                    if(walletBalances[t.source] !== undefined) walletBalances[t.source] += t.amount;
+                }
+                if(t.type === 'Expense') {
+                    let isSav = t.category && t.category.toLowerCase() === 'savings';
+                    if(isSav) totalSav += t.amount;
+                    else totalExp += t.amount;
+
+                    if(walletBalances[t.wallet] !== undefined) walletBalances[t.wallet] -= t.amount;
+                }
+                if(t.type === 'Transfer') {
+                    if(walletBalances[t.fromWallet] !== undefined) walletBalances[t.fromWallet] -= t.amount;
+                    if(walletBalances[t.toWallet] !== undefined) walletBalances[t.toWallet] += t.amount;
+                }
+            });
+
+            let filteredTrans = appData.transactions.filter(t => {
+                let inTime = filterByTime(t.date, timeMode);
+                let textBlob = `${t.source || ''} ${t.category || ''} ${t.note || ''}`.toLowerCase();
+                return inTime && textBlob.includes(searchQuery);
+            });
+
+            let currentLiquidBalance = Object.values(walletBalances).reduce((a, b) => a + b, 0);
+
+            document.getElementById('totalIncome').innerText = `৳${globalTotalIncome}`;
+            document.getElementById('totalExpense').innerText = `৳${totalExp}`;
+            document.getElementById('totalBalance').innerText = `৳${currentLiquidBalance}`;
+            document.getElementById('totalSavingsHome').innerText = `৳${totalSav}`;
+
+            let savingsCat = appData.categories.find(c => c.name.toLowerCase() === 'savings');
+            let targetPercent = savingsCat ? savingsCat.budget : 0;
+            
+            let targetCalculatedTaka = (globalTotalIncome * (targetPercent / 100));
+            let progressPercent = targetCalculatedTaka > 0 ? ((totalSav / targetCalculatedTaka) * 100).toFixed(1) : 0;
+
+            if(document.getElementById('savingsPercentInput')) {
+                document.getElementById('savingsPercentInput').value = targetPercent;
+            }
+            document.getElementById('savingsTargetPercentLabel').innerText = `Goal: ${targetPercent}%`;
+            document.getElementById('savingsTargetTaka').innerText = `৳${targetCalculatedTaka.toFixed(0)}`;
+            document.getElementById('savingsAchievedTaka').innerText = `৳${totalSav}`;
+            document.getElementById('savingsProgressBar').style.width = `${Math.min(100, progressPercent)}%`;
+            document.getElementById('progressBarInsideLabel').innerText = `${progressPercent}% Achieved`;
+
+            let walletsContainer = document.getElementById('homeWalletsContainer');
+            if(walletsContainer) {
+                walletsContainer.innerHTML = appData.wallets.length === 0 
+                    ? '<p class="text-slate-400 italic text-[11px] col-span-2 text-center py-2">কোনো ওয়ালেট নেই। Add Tab থেকে তৈরি করুন।</p>'
+                    : appData.wallets.map(w => `
+                        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl shadow-sm flex justify-between items-center text-xs">
+                            <div>
+                                <span class="font-bold text-slate-700 block">${w.icon} ${w.name}</span>
+                                <span class="font-black text-indigo-700">৳${walletBalances[w.name] !== undefined ? walletBalances[w.name] : w.balance}</span>
+                            </div>
+                            <div class="flex space-x-1 border-l pl-2 border-slate-200">
+                                <button onclick="editWallet(${w.id})" class="text-blue-500 hover:bg-blue-50 p-1 rounded cursor-pointer"><i class="fa fa-edit"></i></button>
+                                <button onclick="deleteWallet(${w.id})" class="text-rose-500 hover:bg-rose-50 p-1 rounded cursor-pointer"><i class="fa fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `).join('');
+            }
+
+            let recentContainer = document.getElementById('recentTransactions');
+            let displayRows = [...filteredTrans].sort((a,b) => b.id - a.id).slice(0,5);
+            recentContainer.innerHTML = displayRows.length === 0 ? '<p class="text-slate-400 italic text-center text-xs py-1">কোনো লেনদেন নেই।</p>' : displayRows.map(t => getTransactionHTMLRow(t)).join('');
+
+            let savingsContainer = document.getElementById('savingsMasterList');
+            let savingsOnly = appData.transactions.filter(t => t.type === 'Expense' && t.category && t.category.toLowerCase() === 'savings');
+            savingsContainer.innerHTML = savingsOnly.length === 0 ? '<p class="text-slate-400 italic text-center text-xs py-2">Savings এর কোনো রেকর্ড নেই।</p>' : savingsOnly.map(t => getTransactionHTMLRow(t)).join('');
+
+            let catManager = document.getElementById('categoryManagerList');
+            if(catManager) {
+                catManager.innerHTML = appData.categories.length === 0 
+                    ? '<p class="text-slate-400 italic text-[10px]">কোনো কাস্টম ক্যাটাগরি তৈরি করা হয়নি।</p>'
+                    : appData.categories.map(c => `
+                        <div class="flex justify-between items-center bg-white p-2 border rounded-lg shadow-sm">
+                            <span class="text-slate-700">${c.icon} ${c.name} (${c.budget}%)</span>
+                            <div class="flex space-x-2">
+                                <button onclick="editCategory(${c.id})" class="text-blue-600 hover:text-blue-800 cursor-pointer"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="deleteCategory(${c.id})" class="text-rose-600 hover:text-rose-800 cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                    `).join('');
+            }
+
+            renderTransactions();
+        }
+
+        function renderChartsAndBars() {
+            let totalInc = 0; let totalExp = 0; let totalSav = 0;
+            
+            appData.wallets.forEach(w => totalInc += w.balance);
+            appData.transactions.forEach(t => {
+                if(t.type === 'Income') totalInc += t.amount;
+                if(t.type === 'Expense') {
+                    if(t.category && t.category.toLowerCase() === 'savings') totalSav += t.amount;
+                    else totalExp += t.amount;
+                }
+            });
+
+            let ctx = document.getElementById('incomeExpensePieChart');
+            if(ctx) {
+                if(myPieChart) myPieChart.destroy();
+                // Bugfix: Prevent chart crashes if values are zero
+                if(totalInc > 0 || (totalExp + totalSav) > 0) {
+                    myPieChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Income', 'Expense & Savings'],
+                            datasets: [{ data: [totalInc, (totalExp + totalSav)], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 1 }]
+                        },
+                        options: { responsive: true, plugins: { legend: { display: false } } }
+                    });
+                }
+            }
+
+            let barsContainer = document.getElementById('categoryProgressContainer');
+            if(!barsContainer) return;
+
+            if(appData.categories.length === 0) {
+                barsContainer.innerHTML = '<p class="text-slate-400 italic text-center text-xs py-4">কোনো বাজেট বার নেই। ক্যাটাগরি যোগ করুন।</p>';
+                return;
+            }
+
+            barsContainer.innerHTML = appData.categories.map(cat => {
+                let targetTakaLimit = (totalInc * (cat.budget / 100));
+                let usedTaka = appData.transactions.filter(t => t.type === 'Expense' && t.category === cat.name).reduce((sum, t) => sum + t.amount, 0);
+                
+                // Bugfix Matrix: Check division by zero to prevent NaN% or Infinity% rendering errors
+                let usedPercent = targetTakaLimit > 0 ? ((usedTaka / targetTakaLimit) * 100) : 0;
+                let neededTaka = Math.max(0, targetTakaLimit - usedTaka);
+
+                return `
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] space-y-2">
+                        <div class="flex justify-between items-center font-bold text-slate-700">
+                            <span class="text-xs font-black text-slate-800">${cat.icon} ${cat.name} (${cat.budget}%)</span>
+                            <span class="text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">লিমিট: ৳${targetTakaLimit.toFixed(0)}</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-3.5 rounded-full overflow-hidden relative border border-slate-300">
+                            <div style="width: ${Math.min(100, usedPercent)}%; background-color: ${cat.color};" class="h-full rounded-full"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-[10px] pt-0.5 font-medium">
+                            <div class="bg-white p-1.5 rounded border text-slate-700">
+                                <span class="text-emerald-600 font-bold">● হয়েছে:</span> ${usedPercent.toFixed(1)}% (৳${usedTaka})
+                            </div>
+                            <div class="bg-white p-1.5 rounded border text-right text-slate-700">
+                                <span class="text-rose-500 font-bold">● বাকি:</span> ৳${neededTaka.toFixed(0)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTransactionHTMLRow(t) {
+            let id = t.id;
+            let title = t.source || t.category || 'Record';
+            let badgeText = t.type;
+            let colorClass = 'bg-emerald-100 text-emerald-800';
+            
+            if(t.type === 'Expense') {
+                let isSav = t.category && t.category.toLowerCase() === 'savings';
+                colorClass = isSav ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800';
+                if(isSav) badgeText = "Savings Sync";
+            }
+            if(t.type === 'Transfer') colorClass = 'bg-indigo-100 text-indigo-800';
+            if(t.type === 'Debt/Loan') colorClass = 'bg-orange-100 text-orange-800';
+
+            return `
+                <div class="flex justify-between items-center p-2.5 bg-white border border-slate-200/60 rounded-xl shadow-sm text-xs">
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${colorClass}">${badgeText}</span>
+                            <span class="font-bold text-slate-800">${title} ${t.note ? `<span class="text-slate-400 font-normal">(${t.note})</span>` : ''}</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-0.5"><i class="fa-regular fa-calendar"></i> ${t.date}</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="font-black text-slate-900">${t.amount}৳</span>
+                        <div class="flex border-l border-slate-200 pl-2 space-x-1">
+                            <button onclick="editRow(${id})" class="text-blue-600 p-1 hover:bg-blue-50 rounded cursor-pointer"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="deleteRow(${id})" class="text-rose-600 p-1 hover:bg-rose-50 rounded cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTransactions() {
+            let listContainer = document.getElementById('masterTransactionList');
+            if(!listContainer) return;
+            let filter = document.getElementById('filterType').value;
+            let query = document.getElementById('searchBar').value.toLowerCase();
+
+            let filtered = appData.transactions.filter(t => {
+                let matchType = (filter === 'All' || t.type === filter);
+                let textBlob = `${t.date} ${t.category || ''} ${t.source || ''} ${t.note || ''}`.toLowerCase();
+                return matchType && textBlob.includes(query);
+            });
+
+            listContainer.innerHTML = filtered.length === 0 ? '<p class="text-slate-400 italic text-center text-xs py-4">তথ্য খুঁজে পাওয়া যায়নি!</p>' : filtered.map(t => getTransactionHTMLRow(t)).join('');
+        }
+
+        function deleteRow(id) {
+            if(confirm('এই ট্রানজেকশনটি মুছে ফেলতে চান? এটি মুছে দিলে ওয়ালেট ব্যালেন্স স্বয়ংক্রিয়ভাবে পুনঃবিন্যাস হবে।')) {
+                appData.transactions = appData.transactions.filter(t => t.id !== id);
+                saveToStorage();
+            }
+        }
+
+        function editRow(id) {
+            let entry = appData.transactions.find(t => t.id === id);
+            if(!entry) return;
+            
+            currentEditTransactionId = id;
+            switchTab('Add', 'tab-add');
+            
+            if(entry.type === 'Income') {
+                showForm('form-income');
+                document.getElementById('incFormHeader').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Income Mode`;
+                document.getElementById('incSubmitBtn').innerHTML = `<i class="fa fa-save"></i> Update Income`;
+                document.getElementById('inc-wallet-select').value = entry.source || '';
+                document.getElementById('inc-amount').value = entry.amount;
+                document.getElementById('inc-date').value = entry.date;
+                document.getElementById('inc-note').value = entry.note || '';
+            } else if(entry.type === 'Expense') {
+                showForm('form-expense');
+                document.getElementById('expFormHeader').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Expense Mode`;
+                document.getElementById('expSubmitBtn').innerHTML = `<i class="fa fa-save"></i> Update Expense`;
+                document.getElementById('exp-cat').value = entry.category || '';
+                document.getElementById('exp-amount').value = entry.amount;
+                document.getElementById('exp-date').value = entry.date;
+                document.getElementById('exp-wallet').value = entry.wallet || '';
+                document.getElementById('inc-note-exp').value = entry.note || '';
+            } else if(entry.type === 'Transfer') {
+                showForm('form-transfer');
+                document.getElementById('transFormHeader').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Transfer Mode`;
+                document.getElementById('transSubmitBtn').innerHTML = `<i class="fa fa-save"></i> Update Transfer`;
+                document.getElementById('trans-from').value = entry.fromWallet || '';
+                document.getElementById('trans-to').value = entry.toWallet || '';
+                document.getElementById('trans-amount').value = entry.amount;
+                document.getElementById('trans-date').value = entry.date;
+                document.getElementById('trans-note').value = entry.note || '';
+            } else if(entry.type === 'Debt/Loan') {
+                showForm('form-debt');
+                document.getElementById('debtFormHeader').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Debt Mode`;
+                document.getElementById('debtSubmitBtn').innerHTML = `<i class="fa fa-save"></i> Update Debt`;
+                document.getElementById('debt-type').value = entry.debtType || '';
+                document.getElementById('debt-name').value = entry.name || '';
+                document.getElementById('debt-amount').value = entry.amount;
+                document.getElementById('debt-date').value = entry.date;
+                document.getElementById('debt-note').value = entry.note || '';
+            }
+        }
+
+        function downloadCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,Type,Title,Amount,Date\n";
+            appData.transactions.forEach(t => csvContent += `${t.type},${t.source || t.category || 'N/A'},${t.amount},${t.date}\n`);
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Tracker_Report.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function deleteAllData() {
+            if(confirm('সব ডাটা মুছে ফেলতে চান?')) {
+                appData = { transactions: [], categories: [], wallets: [] };
+                saveToStorage();
+            }
+        }
+
+        function toggleTheme() {
+            document.getElementById('appBody').classList.toggle('dark-theme');
+        }
+
+        window.onload = function() {
+            updateUI();
+        }
+    </script>
+</body>
+</html>
